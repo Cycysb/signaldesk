@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Generator
 
 from sqlalchemy import Engine, create_engine
@@ -26,6 +27,7 @@ def create_session_factory(engine: Engine) -> sessionmaker[Session]:
     )
 
 
+@contextmanager
 def session_scope(session_factory: sessionmaker[Session]) -> Generator[Session, None, None]:
     session = session_factory()
 

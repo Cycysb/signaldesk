@@ -19,3 +19,9 @@ up:
 
 down:
 	docker compose down
+
+migration:
+	uv run alembic revision --autogenerate -m "$(message)"
+
+migrate:
+	uv run alembic upgrade head
