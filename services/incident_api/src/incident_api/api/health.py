@@ -1,8 +1,10 @@
 from typing import Any
 
-from flask import Blueprint, current_app, jsonify
+from flask import Blueprint, jsonify
 from flask.typing import ResponseReturnValue
-from sqlalchemy import Engine, text
+from sqlalchemy import text
+
+from incident_api.api.dependencies import get_container
 
 health_bp = Blueprint("health", __name__)
 
@@ -14,13 +16,10 @@ def live() -> ResponseReturnValue:
 
 @health_bp.get("/health/ready")
 def ready() -> tuple[Any, int]:
-    engine = current_app.config["DB_ENGINE"]
-
-    if not isinstance(engine, Engine):
-        return jsonify({"status": "error", "reason": "database engine not configured"}), 500
+    container = get_container()
 
     try:
-        with engine.connect() as connection:
+        with container.engine.connect() as connection:
             connection.execute(text("SELECT 1"))
     except Exception:
         return jsonify({"status": "error", "checks": {"database": "down"}}), 503

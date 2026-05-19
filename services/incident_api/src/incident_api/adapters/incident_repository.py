@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from incident_api.adapters.incident_models import IncidentRow
@@ -9,7 +11,19 @@ class IncidentRepository:
         self._session = session
 
     def add(self, incident: Incident) -> None:
-        row = IncidentRow(
+        self._session.add(self._to_row(incident))
+
+    def get_by_id(self, incident_id: UUID) -> Incident | None:
+        row = self._session.get(IncidentRow, incident_id)
+
+        if row is None:
+            return None
+
+        return self._to_domain(row)
+
+    @staticmethod
+    def _to_row(incident: Incident) -> IncidentRow:
+        return IncidentRow(
             id=incident.id,
             title=incident.title,
             description=incident.description,
@@ -22,14 +36,8 @@ class IncidentRepository:
             resolved_at=incident.resolved_at,
         )
 
-        self._session.add(row)
-
-    def get_by_id(self, incident_id: str) -> Incident | None:
-        row = self._session.get(IncidentRow, incident_id)
-
-        if row is None:
-            return None
-
+    @staticmethod
+    def _to_domain(row: IncidentRow) -> Incident:
         return Incident(
             id=row.id,
             title=row.title,

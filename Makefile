@@ -6,6 +6,12 @@ run:
 test:
 	uv run pytest
 
+test-unit:
+	uv run pytest tests/unit
+
+test-integration:
+	uv run pytest tests/integration
+
 lint:
 	uv run ruff check .
 

@@ -17,9 +17,10 @@ class CreateIncidentCommand:
 
 
 @dataclass(frozen=True, slots=True)
-class CreateIncidentResult:
+class IncidentResult:
     id: UUID
     title: str
+    description: str | None
     severity: str
     status: str
     service_name: str
@@ -30,7 +31,7 @@ class CreateIncidentHandler:
     def __init__(self, session: Session) -> None:
         self._repository = IncidentRepository(session)
 
-    def handle(self, command: CreateIncidentCommand) -> CreateIncidentResult:
+    def handle(self, command: CreateIncidentCommand) -> IncidentResult:
         incident = Incident.create(
             title=command.title,
             description=command.description,
@@ -41,11 +42,29 @@ class CreateIncidentHandler:
 
         self._repository.add(incident)
 
-        return CreateIncidentResult(
-            id=incident.id,
-            title=incident.title,
-            severity=incident.severity.value,
-            status=incident.status.value,
-            service_name=incident.service_name,
-            owner_team=incident.owner_team,
-        )
+        return _to_result(incident)
+
+
+class GetIncidentHandler:
+    def __init__(self, session: Session) -> None:
+        self._repository = IncidentRepository(session)
+
+    def handle(self, incident_id: UUID) -> IncidentResult | None:
+        incident = self._repository.get_by_id(incident_id)
+
+        if incident is None:
+            return None
+
+        return _to_result(incident)
+
+
+def _to_result(incident: Incident) -> IncidentResult:
+    return IncidentResult(
+        id=incident.id,
+        title=incident.title,
+        description=incident.description,
+        severity=incident.severity.value,
+        status=incident.status.value,
+        service_name=incident.service_name,
+        owner_team=incident.owner_team,
+    )

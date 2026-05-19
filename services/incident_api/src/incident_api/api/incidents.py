@@ -1,9 +1,22 @@
 from typing import Any
+from uuid import UUID
 
-from flask import Blueprint, current_app, jsonify, request
-from sqlalchemy.orm import Session, sessionmaker
+from flask import Blueprint, jsonify, request
+from pydantic import ValidationError
 
-from incident_api.application.incidents import CreateIncidentCommand, CreateIncidentHandler
+from incident_api.api.dependencies import get_container
+from incident_api.api.errors import (
+    bad_request_response,
+    not_found_response,
+    validation_error_response,
+)
+from incident_api.api.schemas import CreateIncidentRequest, IncidentResponse
+from incident_api.application.incidents import (
+    CreateIncidentCommand,
+    CreateIncidentHandler,
+    GetIncidentHandler,
+    IncidentResult,
+)
 from incident_api.domain.incident import IncidentSeverity
 from incident_api.extensions import session_scope
 
@@ -12,44 +25,58 @@ incidents_bp = Blueprint("incidents", __name__, url_prefix="/api/v1/incidents")
 
 @incidents_bp.post("")
 def create_incident() -> tuple[Any, int]:
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+
+    if payload is None:
+        return bad_request_response("Request body must be valid JSON")
 
     try:
+        request_data = CreateIncidentRequest.model_validate(payload)
         command = CreateIncidentCommand(
-            title=str(payload["title"]),
-            description=payload.get("description"),
-            severity=IncidentSeverity(str(payload["severity"])),
-            service_name=str(payload["service_name"]),
-            owner_team=payload.get("owner_team"),
+            title=request_data.title,
+            description=request_data.description,
+            severity=IncidentSeverity(request_data.severity),
+            service_name=request_data.service_name,
+            owner_team=request_data.owner_team,
         )
-    except KeyError as exc:
-        return jsonify(
-            {"error": "validation_error", "message": f"Missing field: {exc.args[0]}"}
-        ), 400
-    except ValueError as exc:
-        return jsonify({"error": "validation_error", "message": str(exc)}), 400
+    except ValidationError as exc:
+        return validation_error_response(exc)
+    except ValueError:
+        return bad_request_response("Invalid severity")
 
-    session_factory = current_app.config["DB_SESSION_FACTORY"]
+    container = get_container()
 
-    if not isinstance(session_factory, sessionmaker):
-        return jsonify({"error": "server_error", "message": "Session factory not configured"}), 500
-
-    with session_scope(session_factory) as session:
-        if not isinstance(session, Session):
-            return jsonify({"error": "server_error", "message": "Session not configured"}), 500
-
+    with session_scope(container.session_factory) as session:
         result = CreateIncidentHandler(session).handle(command)
 
-    return (
-        jsonify(
-            {
-                "id": str(result.id),
-                "title": result.title,
-                "severity": result.severity,
-                "status": result.status,
-                "service_name": result.service_name,
-                "owner_team": result.owner_team,
-            }
-        ),
-        201,
+    return jsonify(_incident_response(result).model_dump()), 201
+
+
+@incidents_bp.get("/<incident_id>")
+def get_incident(incident_id: str) -> tuple[Any, int]:
+    try:
+        parsed_incident_id = UUID(incident_id)
+    except ValueError:
+        return bad_request_response("Invalid incident id")
+
+    container = get_container()
+
+    with session_scope(container.session_factory) as session:
+        result = GetIncidentHandler(session).handle(parsed_incident_id)
+
+    if result is None:
+        return not_found_response("Incident")
+
+    return jsonify(_incident_response(result).model_dump()), 200
+
+
+def _incident_response(result: IncidentResult) -> IncidentResponse:
+    return IncidentResponse(
+        id=str(result.id),
+        title=result.title,
+        description=result.description,
+        severity=result.severity,
+        status=result.status,
+        service_name=result.service_name,
+        owner_team=result.owner_team,
     )
