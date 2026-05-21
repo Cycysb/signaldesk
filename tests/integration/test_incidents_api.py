@@ -90,3 +90,120 @@ def test_get_incident_returns_404_for_missing_incident(client: FlaskClient) -> N
     body = response.get_json()
 
     assert body["error"] == "not_found"
+
+
+def test_list_incidents_returns_created_incidents(client: FlaskClient) -> None:
+    client.post(
+        "/api/v1/incidents",
+        json={
+            "title": "First incident",
+            "description": None,
+            "severity": "sev3",
+            "service_name": "checkout-api",
+            "owner_team": "payments",
+        },
+    )
+
+    client.post(
+        "/api/v1/incidents",
+        json={
+            "title": "Second incident",
+            "description": None,
+            "severity": "sev2",
+            "service_name": "billing-api",
+            "owner_team": "finance",
+        },
+    )
+
+    response = client.get("/api/v1/incidents")
+
+    assert response.status_code == 200
+
+    body = response.get_json()
+
+    assert body["count"] == 2
+    assert len(body["items"]) == 2
+
+
+def test_change_incident_severity(client: FlaskClient) -> None:
+    create_response = client.post(
+        "/api/v1/incidents",
+        json={
+            "title": "Checkout latency",
+            "description": None,
+            "severity": "sev3",
+            "service_name": "checkout-api",
+            "owner_team": "payments",
+        },
+    )
+
+    incident_id = create_response.get_json()["id"]
+
+    response = client.patch(
+        f"/api/v1/incidents/{incident_id}/severity",
+        json={"severity": "sev1"},
+    )
+
+    assert response.status_code == 200
+
+    body = response.get_json()
+
+    assert body["severity"] == "sev1"
+
+
+def test_change_incident_status_to_resolved(client: FlaskClient) -> None:
+    create_response = client.post(
+        "/api/v1/incidents",
+        json={
+            "title": "Checkout latency",
+            "description": None,
+            "severity": "sev2",
+            "service_name": "checkout-api",
+            "owner_team": "payments",
+        },
+    )
+
+    incident_id = create_response.get_json()["id"]
+
+    response = client.patch(
+        f"/api/v1/incidents/{incident_id}/status",
+        json={"status": "resolved"},
+    )
+
+    assert response.status_code == 200
+
+    body = response.get_json()
+
+    assert body["status"] == "resolved"
+
+
+def test_resolved_incident_cannot_change_severity_via_api(client: FlaskClient) -> None:
+    create_response = client.post(
+        "/api/v1/incidents",
+        json={
+            "title": "Checkout latency",
+            "description": None,
+            "severity": "sev2",
+            "service_name": "checkout-api",
+            "owner_team": "payments",
+        },
+    )
+
+    incident_id = create_response.get_json()["id"]
+
+    client.patch(
+        f"/api/v1/incidents/{incident_id}/status",
+        json={"status": "resolved"},
+    )
+
+    response = client.patch(
+        f"/api/v1/incidents/{incident_id}/severity",
+        json={"severity": "sev1"},
+    )
+
+    assert response.status_code == 400
+
+    body = response.get_json()
+
+    assert body["error"] == "bad_request"
+    assert body["message"] == "Cannot change severity of a resolved incident"

@@ -17,3 +17,18 @@ class IncidentResponse(BaseModel):
     status: str
     service_name: str
     owner_team: str | None
+
+
+class ListIncidentsResponse(BaseModel):
+    items: list[IncidentResponse]
+    limit: int
+    offset: int
+    count: int
+
+
+class ChangeIncidentSeverityRequest(BaseModel):
+    severity: str
+
+
+class ChangeIncidentStatusRequest(BaseModel):
+    status: str

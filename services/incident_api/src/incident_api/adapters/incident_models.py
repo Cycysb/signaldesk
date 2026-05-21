@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, String, Text
+from sqlalchemy import DateTime, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,6 +10,12 @@ from incident_api.adapters.db import Base
 
 class IncidentRow(Base):
     __tablename__ = "incidents"
+
+    __table_args__ = (
+        Index("ix_incidents_created_at", "created_at"),
+        Index("ix_incidents_status", "status"),
+        Index("ix_incidents_service_name", "service_name"),
+    )
 
     id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), primary_key=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)

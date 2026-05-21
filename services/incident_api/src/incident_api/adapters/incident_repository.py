@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from incident_api.adapters.incident_models import IncidentRow
@@ -20,6 +21,30 @@ class IncidentRepository:
             return None
 
         return self._to_domain(row)
+
+    def list(self, *, limit: int, offset: int) -> list[Incident]:
+        statement = (
+            select(IncidentRow).order_by(IncidentRow.created_at.desc()).limit(limit).offset(offset)
+        )
+
+        rows = self._session.scalars(statement).all()
+
+        return [self._to_domain(row) for row in rows]
+
+    def save(self, incident: Incident) -> None:
+        row = self._session.get(IncidentRow, incident.id)
+
+        if row is None:
+            raise ValueError("Incident does not exist")
+
+        row.title = incident.title
+        row.description = incident.description
+        row.severity = incident.severity.value
+        row.status = incident.status.value
+        row.service_name = incident.service_name
+        row.owner_team = incident.owner_team
+        row.updated_at = incident.updated_at
+        row.resolved_at = incident.resolved_at
 
     @staticmethod
     def _to_row(incident: Incident) -> IncidentRow:

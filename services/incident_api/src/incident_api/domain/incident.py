@@ -57,3 +57,26 @@ class Incident:
             updated_at=now,
             resolved_at=None,
         )
+
+    def change_severity(self, new_severity: IncidentSeverity) -> None:
+        if self.status == IncidentStatus.RESOLVED:
+            raise ValueError("Cannot change severity of a resolved incident")
+
+        if self.severity == new_severity:
+            return
+
+        self.severity = new_severity
+        self.updated_at = datetime.now(UTC)
+
+    def change_status(self, new_status: IncidentStatus) -> None:
+        if self.status == IncidentStatus.RESOLVED:
+            raise ValueError("Resolved incidents cannot be changed")
+
+        if self.status == new_status:
+            return
+
+        self.status = new_status
+        self.updated_at = datetime.now(UTC)
+
+        if new_status == IncidentStatus.RESOLVED:
+            self.resolved_at = self.updated_at

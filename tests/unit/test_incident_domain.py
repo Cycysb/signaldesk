@@ -17,3 +17,51 @@ def test_create_incident_defaults_to_open_status() -> None:
     assert incident.service_name == "checkout-api"
     assert incident.owner_team == "payments"
     assert incident.resolved_at is None
+
+
+def test_change_severity_updates_incident() -> None:
+    incident = Incident.create(
+        title="Checkout latency",
+        description=None,
+        severity=IncidentSeverity.SEV3,
+        service_name="checkout-api",
+        owner_team="payments",
+    )
+
+    incident.change_severity(IncidentSeverity.SEV1)
+
+    assert incident.severity == IncidentSeverity.SEV1
+
+
+def test_change_status_to_resolved_sets_resolved_at() -> None:
+    incident = Incident.create(
+        title="Checkout latency",
+        description=None,
+        severity=IncidentSeverity.SEV2,
+        service_name="checkout-api",
+        owner_team="payments",
+    )
+
+    incident.change_status(IncidentStatus.RESOLVED)
+
+    assert incident.status == IncidentStatus.RESOLVED
+    assert incident.resolved_at is not None
+
+
+def test_resolved_incident_cannot_change_severity() -> None:
+    incident = Incident.create(
+        title="Checkout latency",
+        description=None,
+        severity=IncidentSeverity.SEV2,
+        service_name="checkout-api",
+        owner_team="payments",
+    )
+
+    incident.change_status(IncidentStatus.RESOLVED)
+
+    try:
+        incident.change_severity(IncidentSeverity.SEV1)
+    except ValueError as exc:
+        assert str(exc) == "Cannot change severity of a resolved incident"
+    else:
+        raise AssertionError("Expected ValueError")

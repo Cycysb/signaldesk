@@ -3,6 +3,7 @@ from collections.abc import Generator
 
 import pytest
 from flask import Flask
+from flask.testing import FlaskClient
 from incident_api.app import create_app
 from incident_api.config import Settings
 from incident_api.container import Container
@@ -34,5 +35,5 @@ def app() -> Generator[Flask, None, None]:
 
 
 @pytest.fixture
-def client(app: Flask):
+def client(app: Flask) -> FlaskClient:
     return app.test_client()
