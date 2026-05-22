@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from incident_api.adapters.incident_repository import IncidentRepository
+from incident_api.adapters.outbox_repository import OutboxRepository
 from incident_api.domain.incident import Incident, IncidentSeverity, IncidentStatus
 
 
@@ -48,6 +49,7 @@ class IncidentResult:
 class CreateIncidentHandler:
     def __init__(self, session: Session) -> None:
         self._repository = IncidentRepository(session)
+        self._outbox = OutboxRepository(session)
 
     def handle(self, command: CreateIncidentCommand) -> IncidentResult:
         incident = Incident.create(
@@ -59,6 +61,9 @@ class CreateIncidentHandler:
         )
 
         self._repository.add(incident)
+
+        for event in incident.pull_events():
+            self._outbox.add(event)
 
         return _to_result(incident)
 

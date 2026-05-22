@@ -1,4 +1,7 @@
+from flask import Flask
 from flask.testing import FlaskClient
+from incident_api.container import Container
+from sqlalchemy import text
 
 
 def test_create_incident_returns_201(client: FlaskClient) -> None:
@@ -207,3 +210,42 @@ def test_resolved_incident_cannot_change_severity_via_api(client: FlaskClient) -
 
     assert body["error"] == "bad_request"
     assert body["message"] == "Cannot change severity of a resolved incident"
+
+
+def test_create_incident_writes_outbox_event(app: Flask, client: FlaskClient) -> None:
+    response = client.post(
+        "/api/v1/incidents",
+        json={
+            "title": "Checkout API latency spike",
+            "description": "p95 latency is above 2s",
+            "severity": "sev2",
+            "service_name": "checkout-api",
+            "owner_team": "payments",
+        },
+    )
+
+    assert response.status_code == 201
+
+    container = app.config["CONTAINER"]
+
+    assert isinstance(container, Container)
+
+    with container.engine.connect() as connection:
+        result = (
+            connection.execute(
+                text(
+                    """
+                SELECT event_type, aggregate_type, payload, status
+                FROM outbox_events
+                """
+                )
+            )
+            .mappings()
+            .one()
+        )
+
+    assert result["event_type"] == "incident.created"
+    assert result["aggregate_type"] == "incident"
+    assert result["status"] == "pending"
+    assert result["payload"]["severity"] == "sev2"
+    assert result["payload"]["service_name"] == "checkout-api"

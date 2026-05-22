@@ -65,3 +65,36 @@ def test_resolved_incident_cannot_change_severity() -> None:
         assert str(exc) == "Cannot change severity of a resolved incident"
     else:
         raise AssertionError("Expected ValueError")
+
+
+def test_create_incident_records_incident_created_event() -> None:
+    incident = Incident.create(
+        title="Checkout latency",
+        description=None,
+        severity=IncidentSeverity.SEV2,
+        service_name="checkout-api",
+        owner_team="payments",
+    )
+
+    events = incident.pull_events()
+
+    assert len(events) == 1
+    assert events[0].event_type == "incident.created"
+    assert events[0].aggregate_id == incident.id
+    assert events[0].payload["severity"] == "sev2"
+
+
+def test_pull_events_clears_events() -> None:
+    incident = Incident.create(
+        title="Checkout latency",
+        description=None,
+        severity=IncidentSeverity.SEV2,
+        service_name="checkout-api",
+        owner_team="payments",
+    )
+
+    first_pull = incident.pull_events()
+    second_pull = incident.pull_events()
+
+    assert len(first_pull) == 1
+    assert second_pull == []

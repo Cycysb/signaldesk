@@ -5,6 +5,8 @@ from uuid import UUID
 
 from uuid6 import uuid7
 
+from incident_api.domain.events import DomainEvent, incident_created_event
+
 
 class IncidentSeverity(StrEnum):
     SEV1 = "sev1"
@@ -32,6 +34,7 @@ class Incident:
     created_at: datetime
     updated_at: datetime
     resolved_at: datetime | None
+    events: list[DomainEvent]
 
     @classmethod
     def create(
@@ -45,7 +48,7 @@ class Incident:
     ) -> "Incident":
         now = datetime.now(UTC)
 
-        return cls(
+        incident = cls(
             id=uuid7(),
             title=title,
             description=description,
@@ -56,7 +59,20 @@ class Incident:
             created_at=now,
             updated_at=now,
             resolved_at=None,
+            events=[],
         )
+
+        incident.events.append(
+            incident_created_event(
+                incident_id=incident.id,
+                title=incident.title,
+                severity=incident.severity.value,
+                service_name=incident.service_name,
+                owner_team=incident.owner_team,
+            )
+        )
+
+        return incident
 
     def change_severity(self, new_severity: IncidentSeverity) -> None:
         if self.status == IncidentStatus.RESOLVED:
@@ -80,3 +96,8 @@ class Incident:
 
         if new_status == IncidentStatus.RESOLVED:
             self.resolved_at = self.updated_at
+
+    def pull_events(self) -> list[DomainEvent]:
+        events = list(self.events)
+        self.events.clear()
+        return events
