@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Local Postgres",
+      "Group": "Servers",
+      "Host": "host.docker.internal",
+      "Port": 5433,
+      "MaintenanceDB": "signaldesk",
+      "Username": "signaldesk",
+      "SSLMode": "prefer"
+    }
+  }
+}
