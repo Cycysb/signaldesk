@@ -1,7 +1,10 @@
 from logging.config import fileConfig
 
 from alembic import context
-from incident_api.adapters import incident_models  # noqa: F401
+from incident_api.adapters import (
+    incident_models,  # noqa: F401
+    notification_models,  # noqa: F401
+)
 from incident_api.adapters.db import Base
 from sqlalchemy import engine_from_config, pool
 

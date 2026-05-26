@@ -26,14 +26,32 @@ def app() -> Generator[Flask, None, None]:
         raise RuntimeError("Container is not configured")
 
     with container.engine.begin() as connection:
-        connection.execute(text("TRUNCATE TABLE incidents RESTART IDENTITY CASCADE"))
-        connection.execute(text("TRUNCATE TABLE outbox_events, incidents RESTART IDENTITY CASCADE"))
+        connection.execute(
+            text(
+                """
+        TRUNCATE TABLE
+            notification_tasks,
+            outbox_events,
+            incidents
+        RESTART IDENTITY CASCADE
+        """
+            )
+        )
 
     yield flask_app
 
     with container.engine.begin() as connection:
-        connection.execute(text("TRUNCATE TABLE incidents RESTART IDENTITY CASCADE"))
-        connection.execute(text("TRUNCATE TABLE outbox_events, incidents RESTART IDENTITY CASCADE"))
+        connection.execute(
+            text(
+                """
+        TRUNCATE TABLE
+            notification_tasks,
+            outbox_events,
+            incidents
+        RESTART IDENTITY CASCADE
+        """
+            )
+        )
 
 
 @pytest.fixture

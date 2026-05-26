@@ -34,3 +34,6 @@ migrate:
 
 publish-outbox:
 	uv run python -m incident_api.outbox_worker
+
+consume-once:
+	uv run python -m incident_api.notification_worker
