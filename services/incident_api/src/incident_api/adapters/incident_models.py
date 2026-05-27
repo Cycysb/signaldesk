@@ -43,3 +43,5 @@ class OutboxEventRow(Base):
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    attempt_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)

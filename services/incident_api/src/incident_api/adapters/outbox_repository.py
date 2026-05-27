@@ -68,3 +68,17 @@ class OutboxRepository:
 
         row.status = "published"
         row.published_at = datetime.now(UTC)
+
+    def mark_failed(self, event_id: UUID, error: str, *, max_attempts: int) -> None:
+        row = self._session.get(OutboxEventRow, event_id)
+
+        if row is None:
+            raise ValueError("Outbox event not found")
+
+        row.attempt_count += 1
+        row.last_error = error[:2000]
+
+        if row.attempt_count >= max_attempts:
+            row.status = "dead_letter"
+        else:
+            row.status = "pending"

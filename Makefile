@@ -32,8 +32,8 @@ migration:
 migrate:
 	uv run alembic upgrade head
 
-publish-outbox:
+run-outbox-worker:
 	uv run python -m incident_api.outbox_worker
 
-consume-once:
+run-notification-worker:
 	uv run python -m incident_api.notification_worker

@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     kafka_bootstrap_servers: str = "localhost:9092"
     incident_events_topic: str = "signaldesk.incident-events"
     outbox_batch_size: int = 100
+    worker_poll_interval_seconds: float = 2.0
+    outbox_max_attempts: int = 5
 
     database_url: str
 

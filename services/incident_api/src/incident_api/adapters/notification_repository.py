@@ -41,4 +41,5 @@ class NotificationTaskRepository:
         try:
             self._session.flush()
         except IntegrityError as exc:
+            self._session.rollback()
             raise DuplicateNotificationTaskError from exc
