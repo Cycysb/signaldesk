@@ -33,6 +33,11 @@ pythonpath = [
     "services/incident_api/src"
 ]
 testpaths = ["tests"]
+addopts = [
+    "--cov=services/incident_api/src",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+]
 
 [tool.ruff]
 line-length = 100
@@ -45,3 +50,9 @@ indent-style = "space"
 [tool.mypy]
 python_version = "3.12"
 strict = true
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4,<5",
+    "pytest-cov>=5,<6",
+]

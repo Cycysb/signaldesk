@@ -6,6 +6,9 @@ run:
 test:
 	uv run pytest
 
+coverage:
+	uv run pytest --cov
+
 test-unit:
 	uv run pytest tests/unit
 

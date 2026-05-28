@@ -65,6 +65,17 @@ services:
     depends_on:
       - postgres
 
+  incident-api:
+    build: .
+    container_name: signaldesk-api
+    depends_on:
+      - postgres
+      - kafka
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+
 volumes:
   signaldesk-postgres-data:
   signaldesk-kafka-data:
