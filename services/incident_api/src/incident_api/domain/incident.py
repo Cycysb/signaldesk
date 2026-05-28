@@ -45,6 +45,7 @@ class Incident:
         severity: IncidentSeverity,
         service_name: str,
         owner_team: str | None,
+        correlation_id: str | None,
     ) -> "Incident":
         now = datetime.now(UTC)
 
@@ -69,6 +70,7 @@ class Incident:
                 severity=incident.severity.value,
                 service_name=incident.service_name,
                 owner_team=incident.owner_team,
+                correlation_id=correlation_id,
             )
         )
 

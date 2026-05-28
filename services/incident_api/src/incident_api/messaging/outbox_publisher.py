@@ -37,6 +37,7 @@ class OutboxPublisher:
                     occurred_at=event.occurred_at,
                     payload=event.payload,
                     producer=self._settings.app_name,
+                    correlation_id=event.correlation_id,
                 )
 
                 self._producer.publish(

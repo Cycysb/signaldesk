@@ -33,6 +33,7 @@ class CreateIncidentCommand:
     severity: IncidentSeverity
     service_name: str
     owner_team: str | None
+    correlation_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +59,7 @@ class CreateIncidentHandler:
             severity=command.severity,
             service_name=command.service_name,
             owner_team=command.owner_team,
+            correlation_id=command.correlation_id,
         )
 
         self._repository.add(incident)

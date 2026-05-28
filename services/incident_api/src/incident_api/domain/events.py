@@ -13,6 +13,7 @@ class DomainEvent:
     aggregate_id: UUID
     occurred_at: datetime
     payload: dict[str, object]
+    correlation_id: str | None
 
 
 def incident_created_event(
@@ -22,6 +23,7 @@ def incident_created_event(
     severity: str,
     service_name: str,
     owner_team: str | None,
+    correlation_id: str | None = None,
 ) -> DomainEvent:
     return DomainEvent(
         event_id=uuid7(),
@@ -36,4 +38,5 @@ def incident_created_event(
             "service_name": service_name,
             "owner_team": owner_team,
         },
+        correlation_id=correlation_id,
     )

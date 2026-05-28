@@ -10,6 +10,7 @@ from incident_api.api.errors import (
     not_found_response,
     validation_error_response,
 )
+from incident_api.api.request_context import get_correlation_id
 from incident_api.api.schemas import (
     ChangeIncidentSeverityRequest,
     ChangeIncidentStatusRequest,
@@ -50,6 +51,7 @@ def create_incident() -> tuple[Any, int]:
             severity=IncidentSeverity(request_data.severity),
             service_name=request_data.service_name,
             owner_team=request_data.owner_team,
+            correlation_id=get_correlation_id(),
         )
     except ValidationError as exc:
         return validation_error_response(exc)

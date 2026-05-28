@@ -8,6 +8,7 @@ def test_create_incident_defaults_to_open_status() -> None:
         severity=IncidentSeverity.SEV2,
         service_name="checkout-api",
         owner_team="payments",
+        correlation_id="corr-123",
     )
 
     assert incident.id is not None
@@ -26,6 +27,7 @@ def test_change_severity_updates_incident() -> None:
         severity=IncidentSeverity.SEV3,
         service_name="checkout-api",
         owner_team="payments",
+        correlation_id="corr-123",
     )
 
     incident.change_severity(IncidentSeverity.SEV1)
@@ -40,6 +42,7 @@ def test_change_status_to_resolved_sets_resolved_at() -> None:
         severity=IncidentSeverity.SEV2,
         service_name="checkout-api",
         owner_team="payments",
+        correlation_id="corr-123",
     )
 
     incident.change_status(IncidentStatus.RESOLVED)
@@ -55,6 +58,7 @@ def test_resolved_incident_cannot_change_severity() -> None:
         severity=IncidentSeverity.SEV2,
         service_name="checkout-api",
         owner_team="payments",
+        correlation_id="corr-123",
     )
 
     incident.change_status(IncidentStatus.RESOLVED)
@@ -74,6 +78,7 @@ def test_create_incident_records_incident_created_event() -> None:
         severity=IncidentSeverity.SEV2,
         service_name="checkout-api",
         owner_team="payments",
+        correlation_id="corr-123",
     )
 
     events = incident.pull_events()
@@ -91,6 +96,7 @@ def test_pull_events_clears_events() -> None:
         severity=IncidentSeverity.SEV2,
         service_name="checkout-api",
         owner_team="payments",
+        correlation_id="corr-123",
     )
 
     first_pull = incident.pull_events()

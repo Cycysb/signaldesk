@@ -1,0 +1,76 @@
+openapi: 3.1.0
+info:
+  title: SignalDesk API
+  version: 0.1.0
+  description: Production-style incident intelligence backend API.
+servers:
+  - url: http://localhost:5000
+paths:
+  /health/live:
+    get:
+      summary: Liveness check
+      responses:
+        "200":
+          description: Process is alive
+  /health/ready:
+    get:
+      summary: Readiness check
+      responses:
+        "200":
+          description: Service is ready
+        "503":
+          description: Dependency unavailable
+  /api/v1/incidents:
+    get:
+      summary: List incidents
+      responses:
+        "200":
+          description: Incident list
+    post:
+      summary: Create incident
+      responses:
+        "201":
+          description: Incident created
+        "400":
+          description: Invalid request
+  /api/v1/incidents/{incident_id}:
+    get:
+      summary: Get incident by ID
+      parameters:
+        - name: incident_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Incident found
+        "404":
+          description: Incident not found
+  /api/v1/incidents/{incident_id}/severity:
+    patch:
+      summary: Change incident severity
+      parameters:
+        - name: incident_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Severity changed
+  /api/v1/incidents/{incident_id}/status:
+    patch:
+      summary: Change incident status
+      parameters:
+        - name: incident_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Status changed

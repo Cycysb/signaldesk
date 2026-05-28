@@ -15,6 +15,7 @@ def test_build_event_envelope() -> None:
         occurred_at="2026-01-01T00:00:00Z",
         payload={"severity": "sev2"},
         producer="signaldesk-incident-api",
+        correlation_id="corr-123",
     )
 
     assert envelope == {
@@ -28,4 +29,5 @@ def test_build_event_envelope() -> None:
             "id": str(aggregate_id),
         },
         "payload": {"severity": "sev2"},
+        "correlation_id": "corr-123",
     }

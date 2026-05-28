@@ -17,6 +17,7 @@ class OutboxEvent:
     aggregate_id: UUID
     payload: dict[str, object]
     occurred_at: datetime
+    correlation_id: str | None
 
 
 class OutboxRepository:
@@ -34,6 +35,7 @@ class OutboxRepository:
             occurred_at=event.occurred_at,
             created_at=datetime.now(UTC),
             published_at=None,
+            correlation_id=event.correlation_id,
         )
 
         self._session.add(row)
@@ -56,6 +58,7 @@ class OutboxRepository:
                 aggregate_id=row.aggregate_id,
                 payload=row.payload,
                 occurred_at=row.occurred_at,
+                correlation_id=row.correlation_id,
             )
             for row in rows
         ]
