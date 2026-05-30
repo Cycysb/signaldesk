@@ -6,6 +6,7 @@ from incident_api.adapters import (
     notification_models,  # noqa: F401
 )
 from incident_api.adapters.db import Base
+from incident_api.config import get_settings
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
@@ -60,8 +61,14 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    configuration = config.get_section(config.config_ini_section)
+
+    if configuration is None:
+        raise RuntimeError("Alembic configuration section is missing")
+
+    configuration["sqlalchemy.url"] = get_settings().database_url
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

@@ -7,7 +7,10 @@ test:
 	uv run pytest
 
 coverage:
-	uv run pytest --cov
+	uv run pytest \
+	--cov=services/incident_api/src \
+	--cov-report=term-missing \
+	--cov-report=xml
 
 test-unit:
 	uv run pytest tests/unit

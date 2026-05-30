@@ -8,6 +8,7 @@ WORKDIR /app
 RUN pip install uv
 
 COPY pyproject.toml uv.lock ./
+COPY services/incident_api/src ./services/incident_api/src
 
 RUN uv sync --frozen --no-dev
 

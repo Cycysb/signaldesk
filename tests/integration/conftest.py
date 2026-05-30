@@ -10,11 +10,11 @@ from incident_api.container import Container
 from sqlalchemy import text
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore[misc]
 def app() -> Generator[Flask, None, None]:
     database_url = os.environ.get(
         "SIGNALDESK_TEST_DATABASE_URL",
-        "postgresql+psycopg://signaldesk:signaldesk@localhost:5433/signaldesk",
+        "postgresql+psycopg://signaldesk:signaldesk@localhost:5433/signaldesk_test",
     )
 
     settings = Settings(database_url=database_url)
@@ -54,6 +54,6 @@ def app() -> Generator[Flask, None, None]:
         )
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore[misc]
 def client(app: Flask) -> FlaskClient:
     return app.test_client()
