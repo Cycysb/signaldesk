@@ -10,7 +10,7 @@ from incident_api.container import Container
 from sqlalchemy import text
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def app() -> Generator[Flask, None, None]:
     database_url = os.environ.get(
         "SIGNALDESK_TEST_DATABASE_URL",
@@ -54,6 +54,6 @@ def app() -> Generator[Flask, None, None]:
         )
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def client(app: Flask) -> FlaskClient:
     return app.test_client()
